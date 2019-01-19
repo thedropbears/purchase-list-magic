@@ -8,7 +8,7 @@ var SUPPLIER_COL = 10;
 var URL_COL = 11;
 var MAGIC_API_BASE = "<API base URL>";
 
-function onEdit(e) {
+function myOnEdit(e) {
     var range = e.range;
     var sheet = range.getSheet();
 
