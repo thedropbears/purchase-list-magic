@@ -7,6 +7,7 @@ import requests
 
 DOMAIN_TO_SUPPLIER_NAME = {
     "www.vexrobotics.com": "VEX Robotics",
+    "au.rs-online.com": "RS Components",
 }
 
 
@@ -68,4 +69,5 @@ def normalise_bc(data: dict) -> dict:
 
 DOMAIN_TO_SITE_TYPE = {
     "www.vexrobotics.com": scrape_jsonld,
+    "au.rs-online.com": scrape_jsonld,
 }
