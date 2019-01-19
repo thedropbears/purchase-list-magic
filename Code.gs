@@ -77,7 +77,7 @@ function _doURL(url, row, sheet) {
         sheet,
         row,
         PRICE_COL,
-        "=GOOGLEFINANCE(" + info.currency + "AUD)*" + info.price,
+        '=GOOGLEFINANCE("' + info.currency + 'AUD")*' + info.price,
         info.has_aggregate
       );
     }
