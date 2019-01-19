@@ -1,0 +1,4 @@
+cssselect
+hug
+lxml
+requests
