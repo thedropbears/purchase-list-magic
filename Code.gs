@@ -59,8 +59,27 @@ function _doURL(url, row, sheet) {
   if (info.supplier) _setCell(sheet, row, SUPPLIER_COL, info.supplier);
 
   if (info.price) {
-    if (info.currency == "AUD") {
-      _setCell(sheet, row, PRICE_COL, info.price, info.has_aggregate);
+    if (info.currency == "AUD" || !info.currency) {
+      var priceCell = _setCell(
+        sheet,
+        row,
+        PRICE_COL,
+        info.price,
+        info.has_aggregate
+      );
+      if (!info.currency) {
+        priceCell.setNote(
+          "WARNING: Currency could not be automatically determined."
+        );
+      }
+    } else {
+      _setCell(
+        sheet,
+        row,
+        PRICE_COL,
+        "=GOOGLEFINANCE(" + info.currency + "AUD)*" + info.price,
+        info.has_aggregate
+      );
     }
   }
 }
@@ -75,7 +94,7 @@ function _setCell(sheet, row, col, newValue, noOverwrite) {
   var currValue = cell.getValue();
   if (currValue) {
     if (currValue == newValue || noOverwrite) return;
-    // prompt user
+    // TODO prompt user
   }
   return cell.setValue(newValue);
 }
