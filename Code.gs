@@ -63,7 +63,7 @@ function _doURL(url, row, sheet) {
 
     if (info.price) {
         if (info.currency == "AUD") {
-            _setCell(sheet, row, PRICE_COL, info.price);
+            _setCell(sheet, row, PRICE_COL, info.price, info.has_aggregate);
         }
     }
 }
