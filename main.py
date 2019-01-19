@@ -8,7 +8,10 @@ import requests
 DOMAIN_TO_SUPPLIER_NAME = {
     "www.vexrobotics.com": "VEX Robotics",
     "au.rs-online.com": "RS Components",
+    "www.ctr-electronics.com": "Cross the Road Electronics",
 }
+
+SUPPLIER_CURRENCY = {"www.ctr-electronics.com": "USD"}
 
 
 @hug.cli()
@@ -21,8 +24,12 @@ def info_from(url: hug.types.text):
 
     r = requests.get(url)
     data = DOMAIN_TO_SITE_TYPE[u.hostname](r)
+
     if u.hostname in DOMAIN_TO_SUPPLIER_NAME:
         data["supplier"] = DOMAIN_TO_SUPPLIER_NAME[u.hostname]
+    if "currency" not in data and u.hostname in SUPPLIER_CURRENCY:
+        data["currency"] = SUPPLIER_CURRENCY[u.hostname]
+
     return data
 
 
@@ -54,7 +61,7 @@ def normalise_jsonld(data: dict) -> dict:
     return new_data
 
 
-def do_scrape_bigcommerce(r: requests.Response) -> dict:
+def scrape_bigcommerce(r: requests.Response) -> dict:
     return normalise_bc(find_bigcommerce_info(r.text))
 
 
@@ -67,7 +74,25 @@ def normalise_bc(data: dict) -> dict:
     ...
 
 
+def scrape_magento(r: requests.Response) -> dict:
+    html = lxml.html.document_fromstring(r.text)
+    product_views = html.cssselect(".product-view")
+    assert len(product_views) == 1
+    product_view = product_views[0]
+    data = {
+        "price": product_view.cssselect(".regular-price .price")[0].text.lstrip("$")
+    }
+    names = product_view.cssselect(".product-name h1 div")
+    for name_el in names:
+        if name_el.text.startswith("P/N: "):
+            data["sku"] = name_el.text[5:]
+        else:
+            data["name"] = name_el.text
+    return data
+
+
 DOMAIN_TO_SITE_TYPE = {
     "www.vexrobotics.com": scrape_jsonld,
     "au.rs-online.com": scrape_jsonld,
+    "www.ctr-electronics.com": scrape_magento,
 }
