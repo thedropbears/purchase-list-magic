@@ -11,7 +11,7 @@ DOMAIN_TO_SUPPLIER_NAME = {
     "www.ctr-electronics.com": "Cross the Road Electronics",
 }
 
-SUPPLIER_CURRENCY = {"www.ctr-electronics.com": "USD"}
+SUPPLIER_CURRENCY = {"www.ctr-electronics.com": "USD", "www.andymark.com": "USD"}
 
 
 @hug.cli()
@@ -74,6 +74,14 @@ def normalise_bc(data: dict) -> dict:
     ...
 
 
+def scrape_workarea(r: requests.Response) -> dict:
+    html = lxml.html.document_fromstring(r.text)
+    product_containers = html.cssselect(".product-detail-container")
+    assert len(product_containers) == 1
+    product_container = product_containers[0]
+    return json.loads(product_container.get("data-analytics"))["payload"]
+
+
 def scrape_magento(r: requests.Response) -> dict:
     html = lxml.html.document_fromstring(r.text)
     product_views = html.cssselect(".product-view")
@@ -95,4 +103,5 @@ DOMAIN_TO_SITE_TYPE = {
     "www.vexrobotics.com": scrape_jsonld,
     "au.rs-online.com": scrape_jsonld,
     "www.ctr-electronics.com": scrape_magento,
+    "www.andymark.com": scrape_workarea,
 }
