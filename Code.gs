@@ -53,20 +53,18 @@ function _doURL(url, row, sheet) {
     Logger.log("unsupported URL: %s", url);
     return;
   }
+  var hasAggregate =
+    "has_aggregate" in info
+      ? info.has_aggregate
+      : (info.name || "").toLowerCase().indexOf("choices") != -1;
 
-  if (info.name) _setCell(sheet, row, NAME_COL, info.name);
-  if (info.sku) _setCell(sheet, row, SKU_COL, info.sku);
+  if (info.name) _setCell(sheet, row, NAME_COL, info.name, hasAggregate);
+  if (info.sku) _setCell(sheet, row, SKU_COL, info.sku, hasAggregate);
   if (info.supplier) _setCell(sheet, row, SUPPLIER_COL, info.supplier);
 
   if (info.price) {
     if (info.currency == "AUD" || !info.currency) {
-      var priceCell = _setCell(
-        sheet,
-        row,
-        PRICE_COL,
-        info.price,
-        info.has_aggregate
-      );
+      var priceCell = _setCell(sheet, row, PRICE_COL, info.price, hasAggregate);
       if (!info.currency) {
         priceCell.setNote(
           "WARNING: Currency could not be automatically determined."
@@ -78,7 +76,7 @@ function _doURL(url, row, sheet) {
         row,
         PRICE_COL,
         '=GOOGLEFINANCE("' + info.currency + 'AUD")*' + info.price,
-        info.has_aggregate
+        hasAggregate
       );
     }
   }
