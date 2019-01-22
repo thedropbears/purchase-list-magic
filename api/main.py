@@ -1,4 +1,5 @@
 import json
+import re
 import urllib.parse
 
 import hug
@@ -45,6 +46,14 @@ def find_jsonld_product(page: str) -> dict:
         doc = json.loads(doc.text)
         if doc.get("@type") == "Product":
             return doc
+
+
+def do_vex(r: requests.Response) -> dict:
+    data = scrape_jsonld(r)
+    if not re.match(r"^\d{3}-\d{4}$", data.get("sku", "")):
+        # page probably lists multiple parts
+        data["has_aggregate"] = True
+    return data
 
 
 def normalise_jsonld(data: dict) -> dict:
@@ -100,7 +109,7 @@ def scrape_magento(r: requests.Response) -> dict:
 
 
 DOMAIN_TO_SITE_TYPE = {
-    "www.vexrobotics.com": scrape_jsonld,
+    "www.vexrobotics.com": do_vex,
     "au.rs-online.com": scrape_jsonld,
     "www.ctr-electronics.com": scrape_magento,
     "www.andymark.com": scrape_workarea,

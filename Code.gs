@@ -53,10 +53,7 @@ function _doURL(url, row, sheet) {
     Logger.log("unsupported URL: %s", url);
     return;
   }
-  var hasAggregate =
-    "has_aggregate" in info
-      ? info.has_aggregate
-      : (info.name || "").toLowerCase().indexOf("choices") != -1;
+  var hasAggregate = info.has_aggregate;
 
   if (info.name) _setCell(sheet, row, NAME_COL, info.name, hasAggregate);
   if (info.sku) _setCell(sheet, row, SKU_COL, info.sku, hasAggregate);
