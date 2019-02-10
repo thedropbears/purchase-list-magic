@@ -67,6 +67,8 @@ def normalise_jsonld(data: dict) -> dict:
             new_data["has_aggregate"] = True
         new_data["currency"] = offers.get("priceCurrency")
         new_data["price"] = offers.get("price")
+        if "seller" in offers:
+            new_data["supplier"] = offers["seller"]["name"]
     return new_data
 
 
@@ -113,4 +115,5 @@ DOMAIN_TO_SITE_TYPE = {
     "au.rs-online.com": scrape_jsonld,
     "www.ctr-electronics.com": scrape_magento,
     "www.andymark.com": scrape_workarea,
+    "www.littlebird.com.au": scrape_jsonld,
 }
