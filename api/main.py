@@ -10,6 +10,10 @@ DOMAIN_TO_SUPPLIER_NAME = {
     "www.vexrobotics.com": "VEX Robotics",
     "au.rs-online.com": "RS Components",
     "www.ctr-electronics.com": "Cross the Road Electronics",
+    "core-electronics.com.au": "Core Electronics",
+    "www.bunnings.com.au": "Bunnings",
+    "www.digikey.com": "Digi-Key",
+    "www.digikey.com.au": "Digi-Key Australia",
 }
 
 SUPPLIER_CURRENCY = {"www.ctr-electronics.com": "USD", "www.andymark.com": "USD"}
@@ -23,11 +27,21 @@ sesh.headers["User-Agent"] = "https://github.com/thedropbears/purchase-list-magi
 @hug.local()
 def info_from(url: hug.types.text):
     u = urllib.parse.urlparse(url)
-    if u.hostname not in DOMAIN_TO_SITE_TYPE:
-        return
 
-    r = sesh.get(url)
-    data = DOMAIN_TO_SITE_TYPE[u.hostname](r)
+    if u.hostname in DOMAIN_TO_SITE_TYPE:
+        r = sesh.get(url)
+        data = DOMAIN_TO_SITE_TYPE[u.hostname](r)
+    else:
+        return  # TODO battle test below
+        # try all the generic things
+        r = sesh.get(url)
+        jsonld = find_jsonld_product(r.text)
+        if jsonld is not None:
+            data = normalise_jsonld(jsonld)
+        else:
+            data = scrape_html_schema(r)
+            if data is None:
+                return
 
     if u.hostname in DOMAIN_TO_SUPPLIER_NAME:
         data["supplier"] = DOMAIN_TO_SUPPLIER_NAME[u.hostname]
@@ -75,6 +89,65 @@ def normalise_jsonld(data: dict) -> dict:
     return new_data
 
 
+def scrape_html_schema(r: requests.Response) -> dict:
+    """Try to find a schema.org/Product in the HTML."""
+    html = lxml.html.document_fromstring(r.text)
+    for selector in (
+        "[itemtype='http://schema.org/Product'][itemprop='mainEntity']",
+        "[itemtype='http://schema.org/Product']",
+    ):
+        products = html.cssselect(selector)
+        if len(products) == 1:
+            return find_schema_info(products[0])
+
+
+def find_schema_info(prod: lxml.etree.ElementBase) -> dict:
+    """Given a schema.org/Product HTML element, try to grab relevant info."""
+    # why did I ever choose this life
+
+    data = {}
+
+    sku_els = prod.cssselect("[itemprop='sku']")
+    if len(sku_els) == 1:
+        data["sku"] = sku_els[0].get("content")
+    else:
+        prodid_els = prod.cssselect("[itemprop='productID']")
+        if len(prodid_els) == 1:
+            prodid = prodid_els[0].get("content")
+            if prodid.startswith("sku:"):
+                data["sku"] = prodid[4:]
+
+    # Bunnings slightly screwed up the schema URI
+    offers_els = prod.cssselect("[itemprop='offers'][itemtype$='//schema.org/Offer']")
+    if len(offers_els) == 1:
+        offers = offers_els[0]
+
+        price_els = offers.cssselect("[itemprop='price']")
+        if len(price_els) == 1:
+            data["price"] = price_els[0].get("content") or price_els[0].text
+
+        currency_els = offers.cssselect("[itemprop='priceCurrency']")
+        if len(currency_els) == 1:
+            data["currency"] = currency_els[0].get("content") or currency_els[0].text
+
+    if "price" not in data:
+        # try a bit harder
+        price_els = prod.cssselect("[itemprop='price']")
+        if len(price_els) == 1:
+            data["price"] = price_els[0].get("content") or price_els[0].text
+
+    # TODO find the name better - exclude children of other itemprops/itemscopes
+    for selector in ("h1[itemprop='name']", "[itemprop='name']"):
+        name_els = prod.cssselect(selector)
+        if len(name_els) == 1:
+            name = name_els[0].text
+            if name:
+                data["name"] = name
+            break
+
+    return data
+
+
 def scrape_bigcommerce(r: requests.Response) -> dict:
     return normalise_bc(find_bigcommerce_info(r.text))
 
@@ -114,9 +187,13 @@ def scrape_magento(r: requests.Response) -> dict:
 
 
 DOMAIN_TO_SITE_TYPE = {
-    "www.vexrobotics.com": do_vex,
+    "www.littlebird.com.au": scrape_jsonld,
     "au.rs-online.com": scrape_jsonld,
+    "www.vexrobotics.com": do_vex,
     "www.ctr-electronics.com": scrape_magento,
     "www.andymark.com": scrape_workarea,
-    "www.littlebird.com.au": scrape_jsonld,
+    "www.bunnings.com.au": scrape_html_schema,
+    "core-electronics.com.au": scrape_html_schema,
+    "www.digikey.com": scrape_html_schema,
+    "www.digikey.com.au": scrape_html_schema,
 }
