@@ -14,6 +14,9 @@ DOMAIN_TO_SUPPLIER_NAME = {
 
 SUPPLIER_CURRENCY = {"www.ctr-electronics.com": "USD", "www.andymark.com": "USD"}
 
+sesh = requests.Session()
+sesh.headers["User-Agent"] = "https://github.com/thedropbears/purchase-list-magic"
+
 
 @hug.cli()
 @hug.get()
@@ -23,7 +26,7 @@ def info_from(url: hug.types.text):
     if u.hostname not in DOMAIN_TO_SITE_TYPE:
         return
 
-    r = requests.get(url)
+    r = sesh.get(url)
     data = DOMAIN_TO_SITE_TYPE[u.hostname](r)
 
     if u.hostname in DOMAIN_TO_SUPPLIER_NAME:
