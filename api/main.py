@@ -14,6 +14,7 @@ DOMAIN_TO_SUPPLIER_NAME = {
     "www.bunnings.com.au": "Bunnings",
     "www.digikey.com": "Digi-Key",
     "www.digikey.com.au": "Digi-Key Australia",
+    "www.revrobotics.com": "REV Robotics",
 }
 
 SUPPLIER_CURRENCY = {"www.ctr-electronics.com": "USD", "www.andymark.com": "USD"}
@@ -148,19 +149,6 @@ def find_schema_info(prod: lxml.etree.ElementBase) -> dict:
     return data
 
 
-def scrape_bigcommerce(r: requests.Response) -> dict:
-    return normalise_bc(find_bigcommerce_info(r.text))
-
-
-def find_bigcommerce_info(page: str) -> dict:
-    """Scrape a BigCommerce site page HTML for product info."""
-    ...
-
-
-def normalise_bc(data: dict) -> dict:
-    ...
-
-
 def scrape_workarea(r: requests.Response) -> dict:
     html = lxml.html.document_fromstring(r.text)
     product_containers = html.cssselect(".product-detail-container")
@@ -197,4 +185,5 @@ DOMAIN_TO_SITE_TYPE = {
     "core-electronics.com.au": scrape_html_schema,
     "www.digikey.com": scrape_html_schema,
     "www.digikey.com.au": scrape_html_schema,
+    "www.revrobotics.com": scrape_html_schema,
 }
