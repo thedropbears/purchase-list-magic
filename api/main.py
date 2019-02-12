@@ -60,7 +60,7 @@ def find_jsonld_product(page: str) -> dict:
     html = lxml.html.document_fromstring(page)
     jsonld_docs = html.cssselect("script[type='application/ld+json']")
     for doc in jsonld_docs:
-        doc = json.loads(doc.text)
+        doc = json.loads(doc.text.rstrip().rstrip(";"))  # some websites don't know what JSON is
         if doc.get("@type") == "Product":
             return doc
 
@@ -187,6 +187,7 @@ def scrape_magento(r: requests.Response) -> dict:
 
 
 DOMAIN_TO_SITE_TYPE = {
+    "www.banggood.com": scrape_jsonld,
     "www.littlebird.com.au": scrape_jsonld,
     "au.rs-online.com": scrape_jsonld,
     "www.vexrobotics.com": do_vex,
