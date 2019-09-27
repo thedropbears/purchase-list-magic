@@ -24,7 +24,7 @@ sesh.headers["User-Agent"] = "https://github.com/thedropbears/purchase-list-magi
 
 
 @hug.cli()
-@hug.get()
+@hug.get("/")
 @hug.local()
 def info_from(url: hug.types.text):
     u = urllib.parse.urlparse(url)
