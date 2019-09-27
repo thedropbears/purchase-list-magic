@@ -16,7 +16,7 @@ DOMAIN_TO_SUPPLIER_NAME = {
     "www.digikey.com.au": "Digi-Key Australia",
     "www.revrobotics.com": "REV Robotics",
 }
-
+SUPPLIERS_INC_GST = {"Core Electronics"}
 SUPPLIER_CURRENCY = {"www.ctr-electronics.com": "USD", "www.andymark.com": "USD"}
 
 sesh = requests.Session()
@@ -48,6 +48,8 @@ def info_from(url: hug.types.text):
         data["supplier"] = DOMAIN_TO_SUPPLIER_NAME[u.hostname]
     if "currency" not in data and u.hostname in SUPPLIER_CURRENCY:
         data["currency"] = SUPPLIER_CURRENCY[u.hostname]
+    if data.get("supplier") in SUPPLIERS_INC_GST:
+        data["inc_gst"] = True
 
     return data
 
