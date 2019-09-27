@@ -189,3 +189,5 @@ DOMAIN_TO_SITE_TYPE = {
     "www.digikey.com.au": scrape_html_schema,
     "www.revrobotics.com": scrape_html_schema,
 }
+
+app = __hug_wsgi__  # noqa
