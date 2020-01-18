@@ -180,6 +180,7 @@ DOMAIN_TO_SITE_TYPE = {
     "www.banggood.com": scrape_jsonld,
     "www.littlebird.com.au": scrape_jsonld,
     "au.rs-online.com": scrape_jsonld,
+    "www.makerstore.com.au": scrape_jsonld,
     "www.vexrobotics.com": do_vex,
     "www.ctr-electronics.com": scrape_magento,
     "www.andymark.com": scrape_workarea,
