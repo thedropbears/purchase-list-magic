@@ -178,13 +178,13 @@ def scrape_magento(r: requests.Response) -> dict:
 
 DOMAIN_TO_SITE_TYPE = {
     "www.banggood.com": scrape_jsonld,
+    "www.bunnings.com.au": scrape_jsonld,
     "www.littlebird.com.au": scrape_jsonld,
     "au.rs-online.com": scrape_jsonld,
     "www.makerstore.com.au": scrape_jsonld,
     "www.vexrobotics.com": do_vex,
     "www.ctr-electronics.com": scrape_magento,
     "www.andymark.com": scrape_workarea,
-    "www.bunnings.com.au": scrape_html_schema,
     "core-electronics.com.au": scrape_html_schema,
     "www.digikey.com": scrape_html_schema,
     "www.digikey.com.au": scrape_html_schema,
