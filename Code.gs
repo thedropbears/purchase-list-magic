@@ -60,21 +60,23 @@ function _doURL(url, row, sheet) {
   if (info.supplier) _setCell(sheet, row, SUPPLIER_COL, info.supplier);
 
   if (info.price) {
+    var priceCell;
     if (info.currency == "AUD" || !info.currency) {
-      var priceCell = _setCell(sheet, row, PRICE_COL, info.price, hasAggregate);
+      priceCell = _setCell(sheet, row, PRICE_COL, info.price, hasAggregate);
       if (!info.currency) {
         priceCell.setNote(
           "WARNING: Currency could not be automatically determined."
         );
       }
     } else {
-      _setCell(
+      priceCell = _setCell(
         sheet,
         row,
         PRICE_COL,
         '=GOOGLEFINANCE("' + info.currency + 'AUD")*' + info.price,
         hasAggregate
       );
+      priceCell.setNote("converted from " + info.currency);
     }
   }
 }
