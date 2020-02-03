@@ -66,6 +66,9 @@ def find_jsonld_product(page: str) -> dict:
         doc = json.loads(doc.text.rstrip().rstrip(";"))  # some websites don't know what JSON is
         if doc.get("@type") == "Product":
             return doc
+        for it in doc.get("@graph", []):
+            if it.get("@type") == "Product":
+                return it
 
 
 def do_vex(r: requests.Response) -> dict:
@@ -81,14 +84,19 @@ def normalise_jsonld(data: dict) -> dict:
     for key in ("name", "sku"):
         if key in data:
             new_data[key] = data[key]
-    if "offers" in data:
-        offers = data["offers"]
+    offers = data.get("offers")
+    if offers:
+        if isinstance(offers, list):
+            offers = offers[0]
         if offers.get("@type") == "AggregateOffer":
             new_data["has_aggregate"] = True
         new_data["currency"] = offers.get("priceCurrency")
         new_data["price"] = offers.get("price")
         if "seller" in offers:
             new_data["supplier"] = offers["seller"]["name"]
+        tax = offers.get("priceSpecification", {}).get("valueAddedTaxIncluded")
+        if tax is not None:
+            new_data["inc_gst"] = tax
     return new_data
 
 
@@ -182,6 +190,7 @@ DOMAIN_TO_SITE_TYPE = {
     "www.littlebird.com.au": scrape_jsonld,
     "au.rs-online.com": scrape_jsonld,
     "www.makerstore.com.au": scrape_jsonld,
+    "www.mtools.com.au": scrape_jsonld,
     "www.vexrobotics.com": do_vex,
     "www.ctr-electronics.com": scrape_magento,
     "www.andymark.com": scrape_workarea,
