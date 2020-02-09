@@ -76,7 +76,7 @@ function _doURL(url, row, sheet) {
         '=GOOGLEFINANCE("' + info.currency + 'AUD")*' + info.price,
         hasAggregate
       );
-      priceCell.setNote("converted from " + info.currency);
+      priceCell.setNote(info.price + " " + info.currency);
     }
   }
 }
